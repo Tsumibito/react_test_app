@@ -1,28 +1,56 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import PropTypes from 'prop-types';
 import './App.css';
+import { Comments } from './components/Comments';
+import { Add } from './components/Add';
+import { News } from './components/News';
+
 
 class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
+    state = {
+        news: null,
+        isLoading: false,
+    }
+
+    componentDidMount() {
+        this.setState({ isLoading: true })
+        fetch('http://localhost:3000/data/newsData.json')
+            .then(response => {
+                return response.json()
+            })
+            .then(data => {
+                setTimeout(() => { // добавили задержку
+                    this.setState({ isLoading: false, news: data })
+                }, 3000)
+            })
+
+    }
+
+    handleAddNews = (data) => {
+        const nextNews = [data, ...this.state.news]
+        this.setState({ news: nextNews })
+    }
+
+    render() {
+        const { news, isLoading } = this.state
+
+        return (
+            <React.Fragment>
+                <h1>My APP</h1>
+                <Add onAddNews={this.handleAddNews} />
+                <h3>Новости</h3>
+                {isLoading && <p>Загружаю...</p>}
+                {Array.isArray(news) && <News data={news} />}
+                <Comments />
+            </React.Fragment>
+        );
+    }
+}
+
+Add.propTypes = {
+    onAddNews: PropTypes.func.isRequired, // func используется для проверки передачи function
 }
 
 export default App;
+
+
